@@ -29,6 +29,7 @@ const App = () => {
             visibleFrom="sm"
             size="sm"
           />
+          Notted!
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="md">
