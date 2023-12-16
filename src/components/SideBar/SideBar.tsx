@@ -1,15 +1,25 @@
 import React from "react";
-import { Skeleton } from "@mantine/core";
+import { ScrollArea, Loader, Flex } from "@mantine/core";
+import { useNotes } from "../../context/NotesProvider";
+import { NoteCard } from "../NoteCard";
 
 const SideBar: React.FC = () => {
+  const { notes } = useNotes();
+
+  if (!notes) {
+    return (
+      <Flex justify="center">
+        <Loader size="sm" color="gray" />
+      </Flex>
+    );
+  }
+
   return (
-    <>
-      {Array(15)
-        .fill(0)
-        .map((_, index) => (
-          <Skeleton key={index} h={28} mt="sm" animate={false} />
-        ))}
-    </>
+    <ScrollArea>
+      {notes.map((note, index) => (
+        <NoteCard key={index} note={note} />
+      ))}
+    </ScrollArea>
   );
 };
 

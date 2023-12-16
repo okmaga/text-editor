@@ -47,7 +47,8 @@ const useMockData = () => {
   async function initialize(): Promise<void> {
     try {
       for (const note of notes) {
-        await httpService.post("notes/", note);
+        const noteWithDate = { ...note, timestamp: new Date() };
+        await httpService.post("notes/", noteWithDate);
         incrementCount();
       }
     } catch (e) {

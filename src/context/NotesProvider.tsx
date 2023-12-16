@@ -1,5 +1,6 @@
 import React, { useState, useContext, ReactNode, useEffect } from "react";
 import notesService from "../services/notesService";
+import { Note } from "../types/custom";
 
 interface NotesContextType {
   notes: string[];
@@ -26,7 +27,7 @@ interface NotesProviderProps {
 
 const NotesProvider: React.FC<NotesProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
-  const [notes, setNotes] = useState(["note1", "note2"]);
+  const [notes, setNotes] = useState<Note[]>();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

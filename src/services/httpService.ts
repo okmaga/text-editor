@@ -1,9 +1,12 @@
 import axios from "axios";
 import configFile from "../config.json";
+import { Note } from "@/types/custom";
 
-axios.defaults.baseURL = configFile.apiEndpoint;
+const http = axios.create({
+  baseURL: configFile.apiEndpoint
+});
 
-axios.interceptors.request.use(
+http.interceptors.request.use(
   function (config) {
     if (config.url && configFile.isFireBase) {
       const containsSlash = /\/$/gi.test(config.url);
@@ -24,13 +27,6 @@ interface User {
   email: string;
 }
 
-interface Note {
-  id: string;
-  userId: string;
-  title: string;
-  body: string;
-}
-
 type DataType = { [key: string]: Note | User };
 
 const transformData = (data: DataType | null | undefined): (Note | User)[] => {
@@ -42,7 +38,7 @@ const transformData = (data: DataType | null | undefined): (Note | User)[] => {
     : [];
 };
 
-axios.interceptors.response.use(
+http.interceptors.response.use(
   (res) => {
     if (configFile.isFireBase) {
       res.data = { content: transformData(res.data) };
@@ -62,9 +58,9 @@ axios.interceptors.response.use(
   }
 );
 const httpService = {
-  get: axios.get,
-  post: axios.post,
-  put: axios.put,
-  delete: axios.delete
+  get: http.get,
+  post: http.post,
+  put: http.put,
+  delete: http.delete
 };
 export default httpService;
