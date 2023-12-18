@@ -5,3 +5,9 @@ export interface Note {
   body: string;
   timestamp: string;
 }
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+}

@@ -1,7 +1,7 @@
 import React from "react";
 import { RegisterForm } from "../../components/Forms/RegisterForm";
 
-const Signup: React.FC = () => {
+const SignupPage: React.FC = () => {
   return (
     <div>
       <RegisterForm />
@@ -9,4 +9,4 @@ const Signup: React.FC = () => {
   );
 };
 
-export default Signup;
+export default SignupPage;

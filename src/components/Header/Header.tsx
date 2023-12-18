@@ -1,4 +1,5 @@
-import { Burger, Group } from "@mantine/core";
+import { Burger, Flex, Group } from "@mantine/core";
+import { useAuth } from "../../context/AuthProvider";
 
 interface HeaderProps {
   toggleDesktop: () => void;
@@ -13,22 +14,29 @@ const Header: React.FC<HeaderProps> = ({
   mobileOpened,
   desktopOpened
 }) => {
+  const { user } = useAuth();
+
   return (
-    <Group h="100%" px="md">
-      <Burger
-        opened={mobileOpened}
-        onClick={toggleMobile}
-        hiddenFrom="sm"
-        size="sm"
-      />
-      <Burger
-        opened={desktopOpened}
-        onClick={toggleDesktop}
-        visibleFrom="sm"
-        size="sm"
-      />
-      <h2>notted!</h2>
-    </Group>
+    <Flex justify="space-between">
+      <Group h="100%" px="md">
+        <Burger
+          opened={mobileOpened}
+          onClick={toggleMobile}
+          hiddenFrom="sm"
+          size="sm"
+        />
+        <Burger
+          opened={desktopOpened}
+          onClick={toggleDesktop}
+          visibleFrom="sm"
+          size="sm"
+        />
+        <h2>notted!</h2>
+      </Group>
+      <Group>
+        <span>{user?.email}</span>
+      </Group>
+    </Flex>
   );
 };
 

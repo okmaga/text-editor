@@ -1,8 +1,18 @@
-import React, { useContext, ReactNode, useState } from "react";
-import axios from "axios";
+import React, { useContext, ReactNode, useState, useEffect } from "react";
+import axios, { AxiosError } from "axios";
 import userService from "../services/userService";
+import { User } from "../types/custom";
+import {
+  localStorageService,
+  setTokens
+} from "../services/localStorageService";
 
-const httpAuth = axios.create({});
+export const httpAuth = axios.create({
+  baseURL: "https://identitytoolkit.googleapis.com/v1/",
+  params: {
+    key: import.meta.env.VITE_REACT_APP_FIREBASE_KEY
+  }
+});
 
 interface AuthProps {
   email: string;
@@ -10,7 +20,7 @@ interface AuthProps {
 }
 
 interface AuthContextType {
-  user: string;
+  user: User;
   login: (props: AuthProps) => void;
   signup: (props: AuthProps) => void;
 }
@@ -21,58 +31,103 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-const TOKEN_KEY = "jwt-token";
-const REFRESH_KEY = "jwt-refresh-token";
-const EXPIRES_KEY = "jwt-expires";
-
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState();
   const [error, setError] = useState();
-  function setTokens({
-    refreshToken,
-    idToken,
-    expiresIn = 3600
-  }: {
-    refreshToken: string;
-    idToken: string;
-    expiresIn: number;
-  }) {
-    const expiresDate = new Date().getTime() + expiresIn * 1000;
-    localStorage.setItem(TOKEN_KEY, idToken);
-    localStorage.setItem(REFRESH_KEY, refreshToken);
-    localStorage.setItem(EXPIRES_KEY, expiresDate.toString());
+
+  async function getUserData() {
+    try {
+      const { content } = await userService.getCurrentUser();
+      setUser(content);
+    } catch (error) {
+      console.log(error);
+      setError(error);
+    }
   }
-  const login = ({ email, password }: { email: string; password: string }) => {
-    console.log(email, password);
+  useEffect(() => {
+    if (localStorageService.getAccessToken()) {
+      getUserData();
+    }
+  }, []);
+
+  const login = async ({
+    email,
+    password
+  }: {
+    email: string;
+    password: string;
+  }) => {
+    try {
+      const { data } = await httpAuth.post("accounts:signInWithPassword", {
+        email,
+        password,
+        returnSecureToken: true
+      });
+      setTokens(data);
+      getUserData();
+    } catch (e) {
+      const axiosError = e as AxiosError;
+      const { code, message } = axiosError.response.data.error;
+
+      if (code === 400) {
+        if (
+          message === "INVALID_LOGIN_CREDENTIALS" ||
+          message === "INVALID_EMAIL"
+        ) {
+          throw new Error("Email or password are incorrect");
+        }
+      }
+    }
   };
 
   async function signup({
     email,
     password,
+    confirmPassword,
     ...rest
   }: {
     email: string;
     password: string;
+    confirmPassword: string;
   }) {
-    const url = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${process.env.REACT_APP_FIREBASE_KEY}`;
     try {
-      const { data } = await httpAuth.post(url, {
+      if (password !== confirmPassword) {
+        console.log(password);
+        console.log(confirmPassword);
+
+        const errorObject = {
+          password: "Passwords do not match",
+          confirmPassword: "Passwords do not match"
+        };
+        throw errorObject;
+      }
+      const { data } = await httpAuth.post("accounts:signUp", {
         email,
         password,
         returnSecureToken: true
       });
-      console.log(data);
       setTokens(data);
       await createUser({ _id: data.localId, email, ...rest });
     } catch (e) {
-      console.log(e);
+      const axiosError = e as AxiosError;
+      const { code, message } = axiosError.response.data.error;
+      if (code === 400) {
+        if (message === "EMAIL_EXISTS") {
+          const errorObject = { email: "Email already in use" };
+          throw errorObject;
+        }
+      }
     }
   }
 
   async function createUser(data) {
     try {
       const { content } = await userService.create(data);
-      setUser(content);
+      console.log(content);
+
+      if (content) {
+        setUser(content);
+      }
     } catch (e) {
       console.log(e);
       setError(e);

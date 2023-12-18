@@ -1,8 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import { useForm, matchesField, isEmail, hasLength } from "@mantine/form";
 import { Button, Stack, TextInput, Box, PasswordInput } from "@mantine/core";
 import { useAuth } from "../../../context/AuthProvider";
 
 const RegisterForm: React.FC = () => {
+  const navigate = useNavigate();
   const { signup } = useAuth();
 
   const form = useForm({
@@ -15,15 +17,21 @@ const RegisterForm: React.FC = () => {
     validate: {
       email: isEmail("Invalid email"),
       password: hasLength(
-        { min: 3, max: 30 },
+        { min: 6, max: 30 },
         "Password must be 3-30 characters long"
       ),
       confirmPassword: matchesField("password", "Passwords are not the same")
     }
   });
 
-  const handleSubmit = () => {
-    signup(form.values);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await signup(form.values);
+      navigate("/");
+    } catch (e) {
+      form.setErrors(e);
+    }
   };
 
   return (

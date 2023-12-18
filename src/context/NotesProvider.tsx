@@ -38,7 +38,6 @@ const NotesProvider: React.FC<NotesProviderProps> = ({ children }) => {
     try {
       const { content } = await notesService.get();
       setNotes(content);
-      console.log(content);
       setLoading(false);
     } catch (error) {
       const axiosError = error as AxiosError;

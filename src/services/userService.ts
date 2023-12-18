@@ -1,4 +1,5 @@
 import httpService from "./httpService";
+import { localStorageService } from "./localStorageService";
 
 const usersEndpoint = "users/";
 
@@ -12,6 +13,13 @@ const userService = {
       usersEndpoint + payload._id,
       payload
     );
+    return data;
+  },
+  getCurrentUser: async () => {
+    const { data } = await httpService.get(
+      usersEndpoint + localStorageService.getUserId()
+    );
+
     return data;
   }
 };
