@@ -1,5 +1,7 @@
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm, matchesField, isEmail, hasLength } from "@mantine/form";
+import type { FormErrors } from "@mantine/form";
 import { Button, Stack, TextInput, Box, PasswordInput } from "@mantine/core";
 import { useAuth } from "../../../context/AuthProvider";
 
@@ -24,13 +26,18 @@ const RegisterForm: React.FC = () => {
     }
   });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await signup(form.values);
-      navigate("/");
-    } catch (e) {
-      form.setErrors(e);
+  const handleSubmit = async (
+    values: { email: string; password: string; confirmPassword: string },
+    event: React.FormEvent<HTMLFormElement> | undefined
+  ) => {
+    if (event instanceof Event) {
+      event.preventDefault();
+      try {
+        await signup(values);
+        navigate("/");
+      } catch (e) {
+        form.setErrors(e as FormErrors);
+      }
     }
   };
 

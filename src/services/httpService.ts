@@ -16,13 +16,15 @@ http.interceptors.request.use(
       config.url =
         (containsSlash ? config.url?.slice(0, -1) : config.url) + ".json";
 
-      const tokenExpiresDate = parseInt(
-        localStorageService.getTokenExpiresDate()
-      );
+      const tokenExpiresDate = localStorageService.getTokenExpiresDate();
 
       const refreshToken = localStorageService.getRefreshToken();
 
-      if (refreshToken && tokenExpiresDate && tokenExpiresDate < Date.now()) {
+      if (
+        refreshToken &&
+        tokenExpiresDate &&
+        parseInt(tokenExpiresDate) < Date.now()
+      ) {
         const { data } = await httpAuth.post("token", {
           grant_type: "refresh_token",
           refresh_token: refreshToken
@@ -51,20 +53,25 @@ http.interceptors.request.use(
 
 type DataType = { [key: string]: Note | User };
 
-const transformData = (
-  data: DataType | null | undefined
-): Note | User | (Note | User)[] => {
-  return data && !data._id
-    ? Object.keys(data).map((key) => ({
-        ...data[key],
-        id: key
-      }))
-    : data;
+const transformData = <T extends DataType | Note | User>(data: T): T | T[] => {
+  if (!data) {
+    return [] as T[];
+  }
+
+  if (typeof data === "object" && !("_id" in data)) {
+    const transformedData = Object.keys(data).map((key) => ({
+      ...data[key],
+      _id: key
+    }));
+    return transformedData as unknown as T;
+  }
+
+  return data;
 };
 
 http.interceptors.response.use(
   (res) => {
-    if (configFile.isFireBase) {
+    if (configFile.isFireBase && res.data) {
       res.data = { content: transformData(res.data) };
     }
     return res;

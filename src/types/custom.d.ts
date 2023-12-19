@@ -1,13 +1,13 @@
 export interface Note {
-  id: string;
-  userId: string;
+  _id: string;
+  userId?: string;
   title: string;
   body: string;
-  timestamp: string;
+  timestamp?: string;
 }
 
 export interface User {
-  id: string;
-  name: string;
+  _id: string;
+  name?: string;
   email: string;
 }

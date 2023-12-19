@@ -2,6 +2,7 @@ import React from "react";
 import { ScrollArea, Loader, Flex } from "@mantine/core";
 import { useNotes } from "../../context/NotesProvider";
 import { NoteCard } from "../NoteCard";
+import { Note } from "../../types/custom";
 
 const SideBar: React.FC = () => {
   const { notes } = useNotes();
@@ -16,7 +17,7 @@ const SideBar: React.FC = () => {
 
   return (
     <ScrollArea>
-      {notes.map((note, index) => (
+      {notes.map((note: Note, index: number) => (
         <NoteCard key={index} note={note} />
       ))}
     </ScrollArea>

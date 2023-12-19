@@ -14,7 +14,7 @@ import { useAuth } from "../../../context/AuthProvider";
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [credentialsError, setCredentialsError] = useState();
+  const [credentialsError, setCredentialsError] = useState<string | null>();
 
   const form = useForm({
     initialValues: {
@@ -28,12 +28,14 @@ const LoginForm: React.FC = () => {
       await login(form.values);
       navigate("/");
     } catch (e) {
-      setCredentialsError(e.message);
+      if (e instanceof Error) {
+        setCredentialsError(e.message);
+      }
     }
   };
 
   const handleChange = () => {
-    setCredentialsError(undefined);
+    setCredentialsError(null);
   };
 
   return (
@@ -63,7 +65,7 @@ const LoginForm: React.FC = () => {
 
       <Stack h="100" justify="center" align="center">
         <Button
-          disabled={credentialsError}
+          disabled={Boolean(credentialsError)}
           size="md"
           color="gray"
           type="submit"

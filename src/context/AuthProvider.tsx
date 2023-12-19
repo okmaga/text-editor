@@ -1,5 +1,5 @@
 import React, { useContext, ReactNode, useState, useEffect } from "react";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import userService from "../services/userService";
 import { User } from "../types/custom";
 import {
@@ -17,11 +17,13 @@ export const httpAuth = axios.create({
 interface AuthProps {
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
 interface AuthContextType {
-  user: User;
-  login: (props: AuthProps) => void;
+  user: User | undefined | null;
+  error: string | null;
+  login: (props: Omit<AuthProps, "confirmPassword">) => void;
   signup: (props: AuthProps) => void;
 }
 
@@ -32,16 +34,17 @@ interface AuthProviderProps {
 }
 
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState();
-  const [error, setError] = useState();
+  const [user, setUser] = useState<User | undefined | null>();
+  const [error, setError] = useState<string | null>(null);
 
   async function getUserData() {
     try {
       const { content } = await userService.getCurrentUser();
       setUser(content);
     } catch (error) {
-      console.log(error);
-      setError(error);
+      if (error instanceof Error) {
+        setError(error.message);
+      }
     }
   }
   useEffect(() => {
@@ -53,10 +56,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async ({
     email,
     password
-  }: {
-    email: string;
-    password: string;
-  }) => {
+  }: Omit<AuthProps, "confirmPassword">) => {
     try {
       const { data } = await httpAuth.post("accounts:signInWithPassword", {
         email,
@@ -65,17 +65,20 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
       setTokens(data);
       getUserData();
-    } catch (e) {
-      const axiosError = e as AxiosError;
-      const { code, message } = axiosError.response.data.error;
-
-      if (code === 400) {
-        if (
-          message === "INVALID_LOGIN_CREDENTIALS" ||
-          message === "INVALID_EMAIL"
-        ) {
-          throw new Error("Email or password are incorrect");
+    } catch (e: unknown) {
+      if (axios.isAxiosError(e)) {
+        if (e.response?.data.error) {
+          const { code, message } = e.response.data.error;
+          if (code === 400) {
+            if (
+              message === "INVALID_LOGIN_CREDENTIALS" ||
+              message === "INVALID_EMAIL"
+            ) {
+              throw new Error("Email or password are incorrect");
+            }
+          }
         }
+        throw new Error("Something went wrong. Try again later");
       }
     }
   };
@@ -85,16 +88,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     password,
     confirmPassword,
     ...rest
-  }: {
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }) {
+  }: AuthProps) {
     try {
       if (password !== confirmPassword) {
-        console.log(password);
-        console.log(confirmPassword);
-
         const errorObject = {
           password: "Passwords do not match",
           confirmPassword: "Passwords do not match"
@@ -108,29 +104,33 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
       setTokens(data);
       await createUser({ _id: data.localId, email, ...rest });
-    } catch (e) {
-      const axiosError = e as AxiosError;
-      const { code, message } = axiosError.response.data.error;
-      if (code === 400) {
-        if (message === "EMAIL_EXISTS") {
-          const errorObject = { email: "Email already in use" };
-          throw errorObject;
+    } catch (e: unknown) {
+      if (axios.isAxiosError(e)) {
+        if (e.response?.data.error) {
+          const { code, message } = e.response.data.error;
+          if (code === 400) {
+            if (message === "EMAIL_EXISTS") {
+              const errorObject = { email: "Email already in use" };
+              throw errorObject;
+            }
+          }
         }
+        throw new Error("Something went wrong. Try again later");
       }
     }
   }
 
-  async function createUser(data) {
+  async function createUser(data: User) {
     try {
       const { content } = await userService.create(data);
-      console.log(content);
 
       if (content) {
         setUser(content);
       }
     } catch (e) {
-      console.log(e);
-      setError(e);
+      if (e instanceof Error) {
+        setError(e.message);
+      }
     }
   }
 

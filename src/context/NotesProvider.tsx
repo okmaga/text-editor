@@ -3,7 +3,7 @@ import notesService from "../services/notesService";
 import { Note } from "../types/custom";
 
 interface NotesContextType {
-  notes: string[];
+  notes: Note[] | undefined | null;
   loading: boolean;
   error: string | object | null;
 }
@@ -27,7 +27,7 @@ interface NotesProviderProps {
 
 const NotesProvider: React.FC<NotesProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
-  const [notes, setNotes] = useState<Note[]>();
+  const [notes, setNotes] = useState<Note[] | undefined | null>();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
