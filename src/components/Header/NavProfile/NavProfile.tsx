@@ -23,12 +23,7 @@ export const NavProfile = () => {
           <Menu.Target>
             <UnstyledButton>
               <Group gap={7}>
-                <Avatar
-                  src={user.image}
-                  alt={user.name}
-                  radius="xl"
-                  size={30}
-                />
+                <Avatar alt={user.name} radius="xl" size={30} />
                 <Text fw={500} size="sm" lh={1} mr={3}>
                   {user.email}
                 </Text>
@@ -47,7 +42,7 @@ export const NavProfile = () => {
                   stroke={1.5}
                 />
               }
-              onClick={() => logout(() => navigate("/", { replace: true }))}
+              onClick={() => logout()}
             >
               Log out!
             </Menu.Item>
