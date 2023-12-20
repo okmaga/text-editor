@@ -1,5 +1,5 @@
 import { Burger, Flex, Group } from "@mantine/core";
-import { useAuth } from "../../context/AuthProvider";
+import { NavProfile } from "./NavProfile";
 
 interface HeaderProps {
   toggleDesktop: () => void;
@@ -14,8 +14,6 @@ const Header: React.FC<HeaderProps> = ({
   mobileOpened,
   desktopOpened
 }) => {
-  const { user } = useAuth();
-
   return (
     <Flex justify="space-between">
       <Group h="100%" px="md">
@@ -34,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
         <h2>notted!</h2>
       </Group>
       <Group>
-        <span>{user?.email}</span>
+        <NavProfile />
       </Group>
     </Flex>
   );

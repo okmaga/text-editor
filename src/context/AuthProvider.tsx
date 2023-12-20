@@ -25,6 +25,7 @@ interface AuthContextType {
   error: string | null;
   login: (props: Omit<AuthProps, "confirmPassword">) => void;
   signup: (props: AuthProps) => void;
+  logout: () => void;
 }
 
 const AuthContext = React.createContext<AuthContextType>({} as AuthContextType);
@@ -52,6 +53,11 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       getUserData();
     }
   }, []);
+
+  function logout() {
+    localStorageService.removeAuthData();
+    setUser(null);
+  }
 
   const login = async ({
     email,
@@ -135,7 +141,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, error, login, signup }}>
+    <AuthContext.Provider value={{ user, error, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );
