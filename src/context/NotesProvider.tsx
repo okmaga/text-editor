@@ -1,11 +1,16 @@
 import React, { useState, useContext, ReactNode, useEffect } from "react";
 import notesService from "../services/notesService";
 import { Note } from "../types/custom";
+import { useAuth } from "./AuthProvider";
+import { nanoid } from "nanoid";
+import _ from "lodash";
+import { localStorageService } from "../services/localStorageService";
 
 interface NotesContextType {
   notes: Note[] | undefined | null;
   loading: boolean;
   error: string | object | null;
+  createNote: () => void;
 }
 
 interface AxiosError {
@@ -29,15 +34,45 @@ const NotesProvider: React.FC<NotesProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<Note[] | undefined | null>();
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const userId = localStorageService.getUserId();
 
   useEffect(() => {
-    getNotesList();
-  }, []);
+    if (!user) {
+      setNotes(null);
+      return;
+    }
+    getNotesList(userId);
+  }, [user]);
 
-  async function getNotesList() {
+  async function createNote(data) {
+    const note = {
+      ...data,
+      userId: user?._id,
+      _id: nanoid(),
+      timestamp: Date.now()
+    };
     try {
-      const { content } = await notesService.get();
-      setNotes(content);
+      console.log(note);
+      const { content } = await notesService.create(note);
+      setNotes([content, ...notes]);
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response) {
+        setError(
+          axiosError.response.data?.message ?? "An unknown error occurred"
+        );
+      } else {
+        setError("An error occurred");
+      }
+    }
+  }
+
+  async function getNotesList(userId: string | null) {
+    try {
+      const { content } = await notesService.get(userId);
+      const sortedNotes = _.sortBy(content, ["timestamp"]).reverse();
+      setNotes(sortedNotes);
       setLoading(false);
     } catch (error) {
       const axiosError = error as AxiosError;
@@ -52,7 +87,7 @@ const NotesProvider: React.FC<NotesProviderProps> = ({ children }) => {
   }
 
   return (
-    <NotesContext.Provider value={{ notes, loading, error }}>
+    <NotesContext.Provider value={{ notes, loading, error, createNote }}>
       {children}
     </NotesContext.Provider>
   );

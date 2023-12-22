@@ -20,24 +20,22 @@ const RegisterForm: React.FC = () => {
       email: isEmail("Invalid email"),
       password: hasLength(
         { min: 6, max: 30 },
-        "Password must be 3-30 characters long"
+        "Password must be 6-30 characters long"
       ),
       confirmPassword: matchesField("password", "Passwords are not the same")
     }
   });
 
-  const handleSubmit = async (
-    values: { email: string; password: string; confirmPassword: string },
-    event: React.FormEvent<HTMLFormElement> | undefined
-  ) => {
-    if (event instanceof Event) {
-      event.preventDefault();
-      try {
-        await signup(values);
-        navigate("/");
-      } catch (e) {
-        form.setErrors(e as FormErrors);
-      }
+  const handleSubmit = async (values: {
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }) => {
+    try {
+      await signup(values);
+      navigate("/");
+    } catch (e) {
+      form.setErrors(e as FormErrors);
     }
   };
 
