@@ -11,6 +11,7 @@ import { useForm } from "@mantine/form";
 import useMockData from "../../utils/mockData";
 import { useAuth } from "../../context/AuthProvider";
 import { useNotes } from "../../context/NotesProvider";
+import { Note } from "../../types/custom";
 
 const Home: React.FC = () => {
   const { error, initialize, progress, status } = useMockData();
@@ -29,7 +30,7 @@ const Home: React.FC = () => {
     initialize();
   };
 
-  const handleSubmit = (values) => {
+  const handleSubmit = (values: Pick<Note, "title" | "body">) => {
     createNote(values);
   };
   return (

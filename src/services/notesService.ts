@@ -1,4 +1,5 @@
 import httpService from "./httpService";
+import { Note } from "../types/custom";
 
 const notesEndpoint = "notes/";
 
@@ -13,7 +14,7 @@ const notesService = {
     console.log(data);
     return data;
   },
-  create: async (payload) => {
+  create: async (payload: Note) => {
     const { data } = await httpService.put(
       notesEndpoint + payload._id,
       payload

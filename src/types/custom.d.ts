@@ -3,7 +3,7 @@ export interface Note {
   userId?: string;
   title: string;
   body: string;
-  timestamp?: string;
+  timestamp?: string | number;
 }
 
 export interface User {

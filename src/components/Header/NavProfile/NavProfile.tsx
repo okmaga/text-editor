@@ -1,11 +1,10 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import classes from "./NavProfile.module.css";
 import { useAuth } from "../../../context/AuthProvider";
 import { UnstyledButton, Text, Avatar, Group, Menu, rem } from "@mantine/core";
 import { IconLogout, IconChevronDown } from "@tabler/icons-react";
 
 export const NavProfile = () => {
-  const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   return (

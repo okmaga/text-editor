@@ -10,7 +10,7 @@ interface NotesContextType {
   notes: Note[] | undefined | null;
   loading: boolean;
   error: string | object | null;
-  createNote: () => void;
+  createNote: (data: Pick<Note, "title" | "body">) => void;
 }
 
 interface AxiosError {
@@ -45,7 +45,7 @@ const NotesProvider: React.FC<NotesProviderProps> = ({ children }) => {
     getNotesList(userId);
   }, [user]);
 
-  async function createNote(data) {
+  async function createNote(data: Pick<Note, "title" | "body">) {
     const note = {
       ...data,
       userId: user?._id,
@@ -53,9 +53,8 @@ const NotesProvider: React.FC<NotesProviderProps> = ({ children }) => {
       timestamp: Date.now()
     };
     try {
-      console.log(note);
       const { content } = await notesService.create(note);
-      setNotes([content, ...notes]);
+      setNotes([content, ...(Array.isArray(notes) ? notes : [])]);
     } catch (error) {
       const axiosError = error as AxiosError;
       if (axiosError.response) {
