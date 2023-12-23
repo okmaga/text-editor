@@ -1,57 +1,26 @@
-import React from "react";
-import {
-  Button,
-  Box,
-  Progress,
-  TextInput,
-  Textarea,
-  Group
-} from "@mantine/core";
-import { useForm } from "@mantine/form";
-import useMockData from "../../utils/mockData";
-import { useAuth } from "../../context/AuthProvider";
-import { useNotes } from "../../context/NotesProvider";
-import { Note } from "../../types/custom";
+import React, { useState } from "react";
+import { Button, Box } from "@mantine/core";
+import Markdown from "react-markdown";
+import SimpleMdeReact from "react-simplemde-editor";
+import "easymde/dist/easymde.min.css";
 
 const Home: React.FC = () => {
-  const { error, initialize, progress, status } = useMockData();
-  const { user } = useAuth();
+  const [editMode, setEditMode] = useState<boolean>(false);
+  const [value, setValue] = useState("Initial value");
 
-  const { createNote } = useNotes();
-
-  const form = useForm({
-    initialValues: {
-      title: "",
-      body: ""
-    }
-  });
-
-  const handleClick = () => {
-    initialize();
+  const onChange = (value: string) => {
+    setValue(value);
   };
 
-  const handleSubmit = (values: Pick<Note, "title" | "body">) => {
-    createNote(values);
+  const handleClick = () => {
+    setEditMode((m) => !m);
   };
   return (
     <div>
-      {user && <h2>Welcome, {user.email}!</h2>}
-      <ul>
-        <li>Status: {status}</li>
-        <li>Progress: {<Progress value={progress} />}</li>
-        {error && <li>Error: {error}</li>}
-      </ul>
       <Box>
-        <Button onClick={handleClick}>load mock posts</Button>
-      </Box>
-      <Box>
-        <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
-          <TextInput {...form.getInputProps("title")} />
-          <Textarea {...form.getInputProps("body")} />
-          <Group justify="flex-end" mt="md">
-            <Button type="submit">Submit</Button>
-          </Group>
-        </form>
+        {!editMode && <Markdown>{value}</Markdown>}
+        <Button onClick={handleClick}>Submit</Button>
+        <SimpleMdeReact value={value} onChange={onChange} />
       </Box>
     </div>
   );
