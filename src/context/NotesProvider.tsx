@@ -11,6 +11,11 @@ interface NotesContextType {
   loading: boolean;
   error: string | object | null;
   createNote: (data: Pick<Note, "title" | "body">) => void;
+  currentNote: Note | null;
+  editMode: boolean;
+  setEditMode: (value: boolean | ((prev: boolean) => boolean)) => void;
+  setCurrentNote: (note: Note | ((prev: Note | null) => Note | null)) => void;
+  updateNote: (note: Note) => void;
 }
 
 interface AxiosError {
@@ -33,6 +38,8 @@ interface NotesProviderProps {
 const NotesProvider: React.FC<NotesProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<Note[] | undefined | null>();
+  const [currentNote, setCurrentNote] = useState<Note | null>(null);
+  const [editMode, setEditMode] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const userId = localStorageService.getUserId();
@@ -72,6 +79,7 @@ const NotesProvider: React.FC<NotesProviderProps> = ({ children }) => {
       const { content } = await notesService.get(userId);
       const sortedNotes = _.sortBy(content, ["timestamp"]).reverse();
       setNotes(sortedNotes);
+      setCurrentNote(sortedNotes[0]);
       setLoading(false);
     } catch (error) {
       const axiosError = error as AxiosError;
@@ -85,8 +93,43 @@ const NotesProvider: React.FC<NotesProviderProps> = ({ children }) => {
     }
   }
 
+  async function updateNote(note: Note) {
+    try {
+      const { content: updatedNote } = await notesService.update(note);
+      setNotes((prev) => {
+        if (!prev) return prev;
+        const noteIndex = prev.findIndex((n) => n._id === updatedNote._id);
+        const newNotes = [...prev];
+        newNotes[noteIndex] = updatedNote;
+        const sortedNewNotes = _.sortBy(newNotes, ["timestamp"]).reverse();
+        return sortedNewNotes;
+      });
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response) {
+        setError(
+          axiosError.response.data?.message ?? "An unknown error occurred"
+        );
+      } else {
+        setError("An error occurred");
+      }
+    }
+  }
+
   return (
-    <NotesContext.Provider value={{ notes, loading, error, createNote }}>
+    <NotesContext.Provider
+      value={{
+        notes,
+        loading,
+        error,
+        createNote,
+        currentNote,
+        setCurrentNote,
+        editMode,
+        setEditMode,
+        updateNote
+      }}
+    >
       {children}
     </NotesContext.Provider>
   );

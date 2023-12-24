@@ -6,9 +6,10 @@ import { IconTrash, IconEdit } from "@tabler/icons-react";
 
 interface NoteCardProps {
   note: Note;
+  onClick: (note: Note) => void;
 }
 
-const NoteCard: React.FC<NoteCardProps> = ({ note }) => {
+const NoteCard: React.FC<NoteCardProps> = ({ note, onClick }) => {
   let noteDate;
 
   if (note?.timestamp) {
@@ -19,7 +20,13 @@ const NoteCard: React.FC<NoteCardProps> = ({ note }) => {
     });
   }
   return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder>
+    <Card
+      shadow="sm"
+      padding="lg"
+      radius="md"
+      withBorder
+      onClick={() => onClick(note)}
+    >
       <Group justify="space-between" mt="md" mb="xs">
         <Text fw={500}>{note.title}</Text>
         <Badge variant="light" color="gray">

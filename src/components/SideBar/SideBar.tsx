@@ -5,7 +5,11 @@ import { NoteCard } from "../NoteCard";
 import { Note } from "../../types/custom";
 
 const SideBar: React.FC = () => {
-  const { notes } = useNotes();
+  const { notes, setCurrentNote } = useNotes();
+
+  const handleClick = (note: Note) => {
+    setCurrentNote(note);
+  };
 
   if (!notes) {
     return (
@@ -18,7 +22,7 @@ const SideBar: React.FC = () => {
   return (
     <ScrollArea>
       {notes.map((note: Note, index: number) => (
-        <NoteCard key={index} note={note} />
+        <NoteCard key={index} note={note} onClick={() => handleClick(note)} />
       ))}
     </ScrollArea>
   );

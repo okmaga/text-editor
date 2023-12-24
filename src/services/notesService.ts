@@ -3,6 +3,11 @@ import { Note } from "../types/custom";
 
 const notesEndpoint = "notes/";
 
+interface UpdateResponse {
+  content: Note;
+  [key: string]: any;
+}
+
 const notesService = {
   get: async (userId: string | null) => {
     const { data } = await httpService.get(notesEndpoint, {
@@ -11,7 +16,6 @@ const notesService = {
         equalTo: `"${userId}"`
       }
     });
-    console.log(data);
     return data;
   },
   create: async (payload: Note) => {
@@ -20,6 +24,13 @@ const notesService = {
       payload
     );
     return data;
+  },
+  update: async (payload: Note): Promise<UpdateResponse> => {
+    const { data } = await httpService.put(
+      notesEndpoint + payload._id,
+      payload
+    );
+    return data as UpdateResponse;
   }
 };
 export default notesService;
